@@ -1,7 +1,17 @@
 (function () {
+  /**
+   * @param {Element | null} card
+   */
   function setHoverState(card) {
-    const secondaryImage = card.querySelector('[data_secondary_image], [data-secondary-image]');
-    const primaryImage = card.querySelector('[data_primary_image], [data-primary-image]');
+    if (!(card instanceof HTMLElement)) return;
+
+    /** @type {HTMLImageElement | null} */
+    const secondaryImage =
+      card.querySelector('[data_secondary_image], [data-secondary-image]');
+
+    /** @type {HTMLImageElement | null} */
+    const primaryImage =
+      card.querySelector('[data_primary_image], [data-primary-image]');
 
     if (!primaryImage) return;
 
@@ -12,6 +22,10 @@
     }
   }
 
+  /**
+   * @param {HTMLElement[]} swatches
+   * @param {HTMLElement} activeButton
+   */
   function updateSwatchState(swatches, activeButton) {
     swatches.forEach((swatch) => {
       const isActive = swatch === activeButton;
@@ -20,14 +34,35 @@
     });
   }
 
+  /**
+   * @param {HTMLElement} card
+   * @param {HTMLElement} button
+   */
   function updateCard(card, button) {
+    /** @type {HTMLElement | null} */
     const saleBadge = card.querySelector('[data-sale-badge]');
+
+    /** @type {HTMLElement | null} */
     const vendorEl = card.querySelector('[data-product-vendor]');
+
+    /** @type {HTMLElement | null} */
     const titleEl = card.querySelector('[data-product-title]');
+
+    /** @type {HTMLElement | null} */
     const priceEl = card.querySelector('[data-price]');
+
+    /** @type {HTMLElement | null} */
     const comparePriceEl = card.querySelector('[data-compare-price]');
-    const primaryImage = card.querySelector('[data_primary_image], [data-primary-image]');
-    const secondaryImage = card.querySelector('[data_secondary_image], [data-secondary-image]');
+
+    /** @type {HTMLImageElement | null} */
+    const primaryImage =
+      card.querySelector('[data_primary_image], [data-primary-image]');
+
+    /** @type {HTMLImageElement | null} */
+    const secondaryImage =
+      card.querySelector('[data_secondary_image], [data-secondary-image]');
+
+    /** @type {NodeListOf<HTMLAnchorElement>} */
     const links = card.querySelectorAll('[data-product-link]');
 
     const nextTitle = button.dataset.title || '';
@@ -39,7 +74,11 @@
     const nextSecondaryImage = button.dataset.secondaryImage || '';
     const nextSecondaryAlt = button.dataset.secondaryAlt || nextTitle;
     const nextUrl = button.dataset.variantUrl || '';
-    const isOnSale = button.dataset.onSale === 'true' && nextComparePrice && nextComparePrice !== nextPrice;
+
+    const isOnSale =
+      button.dataset.onSale === 'true' &&
+      !!nextComparePrice &&
+      nextComparePrice !== nextPrice;
 
     if (vendorEl) vendorEl.textContent = nextVendor;
     if (titleEl) titleEl.textContent = nextTitle;
@@ -81,17 +120,27 @@
     }
 
     if (nextUrl) {
-      links.forEach((link) => link.setAttribute('href', nextUrl));
+      links.forEach((link) => {
+        link.setAttribute('href', nextUrl);
+      });
     }
 
     setHoverState(card);
   }
 
+  /**
+   * @param {Element | null} card
+   */
   function initCard(card) {
-    if (!card || card.dataset.productCardReady === 'true') return;
+    if (!(card instanceof HTMLElement)) return;
+    if (card.dataset.productCardReady === 'true') return;
+
     card.dataset.productCardReady = 'true';
 
-    const swatches = Array.from(card.querySelectorAll('[data-swatch]'));
+    /** @type {HTMLElement[]} */
+    const swatches = Array.from(card.querySelectorAll('[data-swatch]')).filter(
+      (el) => el instanceof HTMLElement
+    );
 
     swatches.forEach((button) => {
       button.addEventListener('click', function () {
@@ -103,8 +152,13 @@
     setHoverState(card);
   }
 
-  function initAll(scope) {
-    (scope || document).querySelectorAll('[data-product-card]').forEach(initCard);
+  /**
+   * @param {ParentNode | Document | Element} [scope=document]
+   */
+  function initAll(scope = document) {
+    scope.querySelectorAll('[data-product-card]').forEach((card) => {
+      initCard(card);
+    });
   }
 
   document.addEventListener('DOMContentLoaded', function () {
@@ -112,6 +166,9 @@
   });
 
   document.addEventListener('shopify:section:load', function (event) {
-    initAll(event.target);
+    const target = /** @type {EventTarget | null} */ (event.target);
+    if (target instanceof Element) {
+      initAll(target);
+    }
   });
 })();
