@@ -1,0 +1,13 @@
+{
+  "name": "horizon-product-card-assessment",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/styles/tailwind.css -o ./assets/tailwind-output.css --minify",
+    "watch:css": "tailwindcss -i ./src/styles/tailwind.css -o ./assets/tailwind-output.css --watch"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17"
+  }
+}

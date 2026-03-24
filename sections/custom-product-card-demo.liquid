@@ -1,0 +1,21 @@
+{% schema %}
+{
+  "name": "Custom product card demo",
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Product"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Custom product card demo"
+    }
+  ]
+}
+{% endschema %}
+
+<div class="page-width" style="padding-top: 40px; padding-bottom: 40px; display: flex; justify-content: center;">
+  {% render 'custom-product-card', product: section.settings.product, section: section %}
+</div>

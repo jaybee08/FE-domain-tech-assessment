@@ -1,0 +1,168 @@
+{% liquid
+  assign card_product = product
+  if card_product == blank
+    assign card_product = closest.product
+  endif
+
+  if card_product == blank
+    echo '<!-- custom-product-card: no product provided -->'
+    break
+  endif
+
+  assign selected_variant = card_product.selected_or_first_available_variant
+  assign brand_name = card_product.vendor
+  assign product_title = card_product.title
+
+  assign on_sale = false
+  if selected_variant.compare_at_price > selected_variant.price
+    assign on_sale = true
+  endif
+
+  assign primary_image = selected_variant.featured_media | default: card_product.featured_media
+  assign secondary_image = blank
+
+  if selected_variant.metafields.custom.secondary_image != blank
+    assign secondary_image = selected_variant.metafields.custom.secondary_image.value
+  elsif card_product.images.size > 1
+    assign secondary_image = card_product.images[1]
+  endif
+
+  assign option_index = nil
+  for option in card_product.options_with_values
+    assign option_name = option.name | downcase
+    if option_name contains 'color' or option_name contains 'colour'
+      assign option_index = forloop.index0
+      break
+    endif
+  endfor
+
+  assign card_id = 'custom-product-card-' | append: section.id | append: '-' | append: card_product.id
+%}
+
+{{ 'tailwind-output.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'custom-product-card.js' | asset_url }}" defer></script>
+
+<div
+  id="{{ card_id }}"
+  data-product-card
+  class="custom-product-card w-full max-w-[286px]"
+>
+  <a href="{{ card_product.url }}" class="block text-inherit no-underline" data-product-link>
+    <div class="relative aspect-[286/308] overflow-hidden rounded-[24px] border border-[#D7D7D7] bg-[#F3F3F3]">
+      <div
+        class="absolute left-[18px] top-[18px] z-[2] inline-flex min-h-[42px] items-center justify-center rounded-full border border-[#FF2A1F] bg-white px-[18px] py-[7px] text-[15px] font-medium leading-none text-[#FF2A1F] {% unless on_sale %}hidden{% endunless %}"
+        data-sale-badge
+      >
+        On Sale!
+      </div>
+
+      <div class="relative h-full w-full">
+        {% if primary_image != blank %}
+          {{ primary_image | image_url: width: 900 | image_tag:
+            class: 'absolute inset-0 h-full w-full object-contain transition-opacity duration-300 ease-out product-card-primary-image',
+            widths: '320, 480, 640, 900',
+            loading: 'lazy',
+            alt: primary_image.alt | default: product_title,
+            data_primary_image: true
+          }}
+        {% endif %}
+
+        {% if secondary_image != blank %}
+          {{ secondary_image | image_url: width: 900 | image_tag:
+            class: 'absolute inset-0 h-full w-full object-contain opacity-0 transition-opacity duration-300 ease-out product-card-secondary-image',
+            widths: '320, 480, 640, 900',
+            loading: 'lazy',
+            alt: secondary_image.alt | default: product_title,
+            data_secondary_image: true
+          }}
+        {% endif %}
+      </div>
+    </div>
+  </a>
+
+  {% if option_index != nil %}
+    <div class="mt-[18px] flex flex-wrap items-center gap-[10px]" role="list" aria-label="Color options">
+      {% assign seen_values = '' %}
+      {% for variant in card_product.variants %}
+        {% assign swatch_value = variant.options[option_index] %}
+        {% assign token = '|' | append: swatch_value | append: '|' %}
+
+        {% unless seen_values contains token %}
+          {% assign seen_values = seen_values | append: token %}
+
+          {% liquid
+            assign variant_on_sale = false
+            if variant.compare_at_price > variant.price
+              assign variant_on_sale = true
+            endif
+
+            assign variant_primary = variant.featured_media | default: card_product.featured_media
+            assign variant_secondary = blank
+            if variant.metafields.custom.secondary_image != blank
+              assign variant_secondary = variant.metafields.custom.secondary_image.value
+            endif
+
+            assign swatch_color = '#D9D9D9'
+            case swatch_value | downcase
+              when 'orange'
+                assign swatch_color = '#FF6A2A'
+              when 'green'
+                assign swatch_color = '#0B7A0B'
+              when 'blue'
+                assign swatch_color = '#0E6BA8'
+              when 'yellow'
+                assign swatch_color = '#E8D372'
+              when 'pink'
+                assign swatch_color = '#E6B6E8'
+              when 'navy'
+                assign swatch_color = '#1D2D62'
+              when 'light green'
+                assign swatch_color = '#93B95B'
+            endcase
+          %}
+
+          <button
+            type="button"
+            class="relative h-[28px] w-[28px] rounded-full border border-transparent p-0 transition-transform duration-150 hover:scale-105 {% if variant.id == selected_variant.id %}is-active-swatch{% endif %}"
+            aria-label="{{ swatch_value | escape }}"
+            aria-pressed="{% if variant.id == selected_variant.id %}true{% else %}false{% endif %}"
+            data-swatch
+            data-variant-id="{{ variant.id }}"
+            data-variant-url="{{ variant.url }}"
+            data-title="{{ product_title | escape }}"
+            data-vendor="{{ brand_name | escape }}"
+            data-price="{{ variant.price | money | escape }}"
+            data-compare-price="{{ variant.compare_at_price | money | escape }}"
+            data-on-sale="{% if variant_on_sale %}true{% else %}false{% endif %}"
+            data-primary-image="{% if variant_primary != blank %}{{ variant_primary | image_url: width: 900 }}{% endif %}"
+            data-primary-alt="{{ variant_primary.alt | default: product_title | escape }}"
+            data-secondary-image="{% if variant_secondary != blank %}{{ variant_secondary | image_url: width: 900 }}{% endif %}"
+            data-secondary-alt="{{ variant_secondary.alt | default: product_title | escape }}"
+            style="--swatch-color: {{ swatch_color }};"
+          >
+            <span class="block h-full w-full rounded-full bg-[var(--swatch-color)]"></span>
+          </button>
+        {% endunless %}
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="mt-[18px]">
+    {% if brand_name != blank %}
+      <div class="text-[14px] leading-[1.3] text-[#1A1A1A]" data-product-vendor>{{ brand_name }}</div>
+    {% endif %}
+
+    <a href="{{ card_product.url }}" class="mt-[6px] block text-inherit no-underline" data-product-link>
+      <h3 class="m-0 text-[22px] font-semibold leading-[1.15] text-[#0E4A7B]" data-product-title>{{ product_title }}</h3>
+    </a>
+
+    <div class="mt-[14px] flex items-center gap-[12px] text-[18px] leading-none">
+      <span class="text-[#111111] line-through {% unless on_sale %}hidden{% endunless %}" data-compare-price>
+        {{ selected_variant.compare_at_price | money }}
+      </span>
+      <span class="{% if on_sale %}text-[#FF2A1F]{% else %}text-[#111111]{% endif %}" data-price>
+        {{ selected_variant.price | money }}
+      </span>
+    </div>
+  </div>
+</div>

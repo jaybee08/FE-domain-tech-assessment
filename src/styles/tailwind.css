@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .custom-product-card.has-secondary-hover:hover .product-card-primary-image {
+    @apply opacity-0;
+  }
+
+  .custom-product-card.has-secondary-hover:hover .product-card-secondary-image {
+    @apply opacity-100;
+  }
+
+  .is-active-swatch {
+    border-color: #0e5a92;
+    box-shadow: 0 0 0 2px #ffffff inset;
+  }
+
+  .is-active-swatch::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border: 2px solid #0e5a92;
+    border-radius: 9999px;
+  }
+}
