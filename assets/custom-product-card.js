@@ -6,20 +6,19 @@
     if (!(card instanceof HTMLElement)) return;
 
     /** @type {HTMLImageElement | null} */
-    const secondaryImage =
-      card.querySelector('[data_secondary_image], [data-secondary-image]');
+    const secondaryImage = card.querySelector('[data-secondary-image]');
 
     /** @type {HTMLImageElement | null} */
-    const primaryImage =
-      card.querySelector('[data_primary_image], [data-primary-image]');
+    const primaryImage = card.querySelector('[data-primary-image]');
 
     if (!primaryImage) return;
 
-    if (secondaryImage && secondaryImage.getAttribute('src')) {
-      card.classList.add('has-secondary-hover');
-    } else {
-      card.classList.remove('has-secondary-hover');
-    }
+    const hasSecondaryImage =
+      !!secondaryImage &&
+      !!secondaryImage.getAttribute('src') &&
+      secondaryImage.style.display !== 'none';
+
+    card.classList.toggle('has-secondary-hover', hasSecondaryImage);
   }
 
   /**
@@ -55,12 +54,10 @@
     const comparePriceEl = card.querySelector('[data-compare-price]');
 
     /** @type {HTMLImageElement | null} */
-    const primaryImage =
-      card.querySelector('[data_primary_image], [data-primary-image]');
+    const primaryImage = card.querySelector('[data-primary-image]');
 
     /** @type {HTMLImageElement | null} */
-    const secondaryImage =
-      card.querySelector('[data_secondary_image], [data-secondary-image]');
+    const secondaryImage = card.querySelector('[data-secondary-image]');
 
     /** @type {NodeListOf<HTMLAnchorElement>} */
     const links = card.querySelectorAll('[data-product-link]');
@@ -115,6 +112,7 @@
         secondaryImage.style.display = 'block';
       } else {
         secondaryImage.removeAttribute('src');
+        secondaryImage.alt = '';
         secondaryImage.style.display = 'none';
       }
     }
@@ -149,7 +147,19 @@
       });
     });
 
-    setHoverState(card);
+    /** @type {HTMLElement | undefined} */
+    const activeSwatch = swatches.find(
+      (button) =>
+        button.classList.contains('is-active-swatch') ||
+        button.getAttribute('aria-pressed') === 'true'
+    );
+
+    if (activeSwatch) {
+      updateSwatchState(swatches, activeSwatch);
+      updateCard(card, activeSwatch);
+    } else {
+      setHoverState(card);
+    }
   }
 
   /**
