@@ -73,7 +73,6 @@
 
         {% if primary_src != blank %}
           <img
-            src="{{ primary_src }}"
             alt="{{ primary_alt }}"
             class="absolute inset-0 h-full w-full object-contain transition-opacity duration-300 ease-out product-card-primary-image"
             loading="lazy"
@@ -85,14 +84,12 @@
 
 
         {% liquid
-        assign secondary_src = ''
         assign secondary_alt = ''
         assign secondary_width = ''
         assign secondary_height = ''
         assign secondary_hidden = true
 
         if secondary_image != blank
-          assign secondary_src = secondary_image | image_url: width: 900
           assign secondary_alt = secondary_image.alt | default: product_title | escape
           assign secondary_width = secondary_image.width
           assign secondary_height = secondary_image.height
