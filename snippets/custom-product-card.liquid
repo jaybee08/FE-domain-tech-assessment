@@ -205,5 +205,21 @@
         {{ selected_variant.price | money }}
       </span>
     </div>
+
+    {% assign is_available = selected_variant.available %}
+
+    <div class="mt-[16px]">
+        {% form 'product', card_product, class: 'product-card-form', data-product-form: '' %}
+
+          <button type="submit" 
+            class="inline-flex">
+            {% if is_available %}
+              Add to cart
+            {% else %}
+              Sold out
+            {% endif %}
+          </button>
+        {% endform %}
+    </div>
   </div>
 </div>
