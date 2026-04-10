@@ -210,16 +210,16 @@
 
     <div class="mt-[16px]">
         {% form 'product', card_product, class: 'product-card-form', data-product-form: '' %}
-          <input type="hidden" name="quantity" value="1">
-          <input id="" type="hidden" value="selected_variant.id">
-          <button type="submit" 
-            class="inline-flex">
-            {% if is_available %}
-              Add to cart
-            {% else %}
-              Sold out
-            {% endif %}
-          </button>
+            <input type="hidden" name="quantity" value="1">
+            <input id="" type="hidden" value="selected_variant.id">
+            <button type="submit" 
+              class="inline-flex">
+              {% if is_available %}
+                Add to cart
+              {% else %}
+                Sold out
+              {% endif %}
+            </button>
         {% endform %}
     </div>
   </div>
